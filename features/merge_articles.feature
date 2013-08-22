@@ -13,7 +13,7 @@ Feature: Merge articles
     Given I am logged into the admin panel as a "Blog publisher"
     When I am on the "Does it suck" article's edit page
     Then I should not see "Merge Articles"
-  	When I go to the home pag
+  	When I go to the home page
   	Then I should see "Abc"
   	Then I should see "Def"
 

@@ -12,15 +12,23 @@ class Admin::ContentController < Admin::BaseController
   end
 
   def merge
+    if current_user.profile_id != 1
+      redirect_to({:action => 'index'})
+      flash[:error] = _("Error, you are not allowed to perform this action")
+      return
+    end
+
     if params[:article_id] == params[:merge_with]
-      redirect_to({:action => 'index'}, :notice => "Cannot merge article with itself")
+      redirect_to({:action => 'index'})
+      flash[:error] = "Cannot merge article with itself"
       return
     end
 
     @article = Article.find(params[:article_id])
 
     if @article == nil or !Article.exists?(params[:merge_with])
-      redirect_to({:action => 'index'}, :notice => "Article does not exist")
+      redirect_to({:action => 'index'})
+      flash[:error]= "Article does not exist"
       return
     end
 
