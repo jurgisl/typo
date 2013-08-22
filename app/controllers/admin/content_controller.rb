@@ -11,6 +11,24 @@ class Admin::ContentController < Admin::BaseController
     render :inline => "<%= raw auto_complete_result @items, 'name' %>"
   end
 
+  def merge
+    if params[:article_id] == params[:merge_with]
+      redirect_to({:action => 'index'}, :notice => "Cannot merge article with itself")
+      return
+    end
+
+    @article = Article.find(params[:article_id])
+
+    if @article == nil or !Article.exists?(params[:merge_with])
+      redirect_to({:action => 'index'}, :notice => "Article does not exist")
+      return
+    end
+
+    @article.merge_with(params[:merge_with])
+
+    redirect_to({:action => 'index'}, :notice => "Articles sucessfully merged")
+  end
+
   def index
     @search = params[:search] ? params[:search] : {}
     

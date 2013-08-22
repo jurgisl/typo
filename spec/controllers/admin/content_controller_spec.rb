@@ -481,6 +481,76 @@ describe Admin::ContentController do
     it_should_behave_like 'destroy action'
     it_should_behave_like 'autosave action'
 
+    describe 'merge action' do
+      describe 'POST' do
+        before do
+          Article.stub(:find).and_return(nil)
+        end
+
+        context 'when articles do not exist' do
+          it 'should redirect to index' do
+            post :merge, :article_id=>1, :merge_with => 2
+
+            response.should redirect_to(:action => 'index')
+          end
+          it 'should set error message' do
+            post :merge, :article_id=>1, :merge_with => 2
+
+            flash[:notice].should == "Article does not exist"
+          end
+
+          it 'should redirect with error if only one article exists' do
+            Article.stub(:find).and_return(Article.new)
+            post :merge, :article_id=>1, :merge_with => 2
+
+            flash[:notice].should == "Article does not exist"
+            response.should redirect_to(:action => 'index')
+          end
+        end
+
+        context 'when articles exist' do
+
+          before do
+            @merge = Article.new
+            @merge.stub(:merge_with)
+
+            Article.stub(:find).and_return(@merge)
+            Article.stub(:exists?).and_return(true)
+          end
+
+          it 'find article to merge' do
+            post :merge, :article_id => 1, :merge_with => 2
+
+            expect(assigns(:article)).to be_an Article
+          end
+
+          it 'merges 2 articles' do
+            @merge.should_receive(:merge_with).with(2)
+
+            post :merge, :article_id =>1, :merge_with => 2
+          end
+          it 'redirects to articles index' do
+            post :merge, :article_id=>1, :merge_with => 2
+
+            response.should redirect_to(:action => 'index')
+          end
+
+          it 'sets flash message on successful merge' do
+            post :merge, :article_id=>1, :merge_with => 2
+
+            flash[:notice].should == "Articles sucessfully merged"
+          end
+
+          it 'should not allow merge same article' do
+            post :merge, :article_id=>1, :merge_with => 1
+
+            flash[:notice].should == "Cannot merge article with itself"
+          end
+
+        end
+      end
+    end
+
     describe 'edit action' do
 
       it 'should edit article' do

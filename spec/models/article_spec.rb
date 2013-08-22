@@ -630,5 +630,47 @@ describe Article do
     end
 
   end
+
+  describe "#merge_with" do
+    before(:each) do
+      @article = Factory.create(:article)
+      @with = Factory.create(:article)
+    end
+
+    it 'should create new article return its id' do
+      id = @article.merge_with(@with.id)
+
+      Article.should exist id
+    end
+
+    it 'should create new article with content of both articles and title' do
+      merged = Article.find(@article.merge_with(@with.id))
+
+      merged.body.should == @article.body+@with.body
+      merged.title.should == @article.title
+    end
+
+    it 'should assign author' do
+      merged = Article.find(@article.merge_with(@with.id))
+
+      merged.user.should == @article.user
+    end
+
+    it 'should copy comments' do
+      @article.add_comment(:author => "Harry", :body => "Comment").save
+      @with.add_comment(:author => "John", :body => "Review").save
+
+      merged = Article.find(@article.merge_with(@with.id))
+
+      merged.comments.length.should == 2
+    end
+
+    it 'should delete old articles' do
+      merged = Article.find(@article.merge_with(@with.id))
+
+      Article.should_not exist @article.id
+      Article.should_not exist @with.id
+    end
+  end
 end
 

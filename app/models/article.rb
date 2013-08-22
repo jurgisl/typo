@@ -71,6 +71,30 @@ class Article < Content
     end
   end
 
+  def merge_with(article_id)
+    article = Article.find(article_id)
+
+    merged = Article.create(
+      :title => self.title,
+      :body => self.body.to_s+article.body.to_s,
+      :user_id => self.user_id,
+      :published => true,
+      :state => "published"
+      )
+
+
+    self.comments.each { |comment| comment.update_attributes(:article => merged) }
+    article.comments.each { |comment| comment.update_attributes(:article => merged) }
+
+    self.reload
+    article.reload
+
+    self.destroy
+    article.destroy
+
+    return merged.id
+  end
+
   def set_permalink
     return if self.state == 'draft'
     self.permalink = self.title.to_permalink if self.permalink.nil? or self.permalink.empty?

@@ -43,16 +43,9 @@ Given /^the blog is set up$/ do
                 :state => 'active'})
 end
 
-And /^I am logged into the admin panel$/ do
-  visit '/accounts/login'
-  fill_in 'user_login', :with => 'admin'
-  fill_in 'user_password', :with => 'aaaaaaaa'
-  click_button 'Login'
-  if page.respond_to? :should
-    page.should have_content('Login successful')
-  else
-    assert page.has_content?('Login successful')
-  end
+When /^I am on the "(.*?)" article's edit page$/ do |title| #'
+  article = Article.where :title => title
+  visit "/admin/content/edit/#{article.first.id}"
 end
 
 # Single-line step scoper
@@ -65,7 +58,7 @@ When /^(.*) within (.*[^:]):$/ do |step, parent, table_or_string|
   with_scope(parent) { When "#{step}:", table_or_string }
 end
 
-Given /^(?:|I )am on (.+)$/ do |page_name|
+Given /^(?:|I )am on ([^"]+)$/ do |page_name| #"
   visit path_to(page_name)
 end
 
@@ -143,6 +136,11 @@ Then /^(?:|I )should see \/([^\/]*)\/$/ do |regexp|
     assert page.has_xpath?('//*', :text => regexp)
   end
 end
+
+Then /^I should see a link "(.*?)"$/ do |title|
+  page.should have_link title
+end
+
 
 Then /^(?:|I )should not see "([^"]*)"$/ do |text|
   if page.respond_to? :should
